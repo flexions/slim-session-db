@@ -61,6 +61,13 @@ $app->add(new \Fx\SessionMiddleware([
   ]
 ]));
 ```
+SessionMiddleware 생성자에 입력되는 parameter는 아래와 같습니다.
+- name: 세션 이름입니다.
+- db
+  - host: db host 입니다.
+  - dbname: 사용하는 DB 이름 입니다.
+  - user: DB 사용자 ID 입니다.
+  - pass: DB 사용자 비밀번호 입니다.
 
 ### 4. 사용방법
 
