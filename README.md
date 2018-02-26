@@ -62,6 +62,38 @@ $app->add(new \Fx\SessionMiddleware([
 ]));
 ```
 
+### 4. 사용방법
+
+#### 4-1. index.php에 세션을 컨테이너에 등록
+```
+// session module
+$container['session'] = function($c) {
+  return new \Fx\Session();
+};
+``` 
+
+#### 4-2. router에서 세션 사용
+```
+$app->get('[/]', function($request, $response, $args) {
+  $this->session->get('id');
+});
+```
+session 변수의 method는 Session.php에 구현되어 있으며 아래와 같습니다.
+- get(key, default) : key에 해당하는 세션 변수를 가져옵니다. 없을 경우, default를 반환하며 기본값은 null 입니다.
+- set(key, $value) : 세션에 key라는 이름으로 value를 배열 형태로 저장합니다.
+- delete(key): 세션에 등록되 key에 해당하는 항목을 삭제합니다.
+- clearAll(): 세션에 등록된 모든 항목들을 삭제합니다. 사용을 권장하지 않습니다.
+
+
+### 4-3. 세션 데이터 Destroy
+세션 데이터의 삭제(Destory)는 아래와 같습니다. clearAll과 동일하게 세션에 저장된 데이터를 삭제하나 session_destroy()를 추가적으로 진행합니다. 
+```
+$app->get('/auth/sign/out', function($request, $response, $args) {
+  \Fx\Session::destroy();
+  return $res->withRedirect('/');
+});
+```
+
 ## References
 - [http://culttt.com/2013/02/04/how-to-save-php-sessions-to-a-database/](http://culttt.com/2013/02/04/how-to-save-php-sessions-to-a-database/)
 - [https://github.com/akrabat/rka-slim-session-middleware](https://github.com/akrabat/rka-slim-session-middleware)
