@@ -63,5 +63,5 @@ $app->add(new \Fx\SessionMiddleware([
 ```
 
 ## References
-[http://culttt.com/2013/02/04/how-to-save-php-sessions-to-a-database/](http://culttt.com/2013/02/04/how-to-save-php-sessions-to-a-database/)
-[https://github.com/akrabat/rka-slim-session-middleware](https://github.com/akrabat/rka-slim-session-middleware)
+- [http://culttt.com/2013/02/04/how-to-save-php-sessions-to-a-database/](http://culttt.com/2013/02/04/how-to-save-php-sessions-to-a-database/)
+- [https://github.com/akrabat/rka-slim-session-middleware](https://github.com/akrabat/rka-slim-session-middleware)
