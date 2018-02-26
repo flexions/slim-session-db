@@ -75,7 +75,7 @@ $container['session'] = function($c) {
 #### 4-2. router에서 세션 사용
 ```
 $app->get('[/]', function($request, $response, $args) {
-  $this->session->get('id');
+  $userId = $this->session->get('id');
 });
 ```
 session 변수의 method는 Session.php에 구현되어 있으며 아래와 같습니다.
@@ -86,7 +86,7 @@ session 변수의 method는 Session.php에 구현되어 있으며 아래와 같�
 
 
 ### 4-3. 세션 데이터 Destroy
-세션 데이터의 삭제(Destory)는 아래와 같습니다. clearAll과 동일하게 세션에 저장된 데이터를 삭제하나 session_destroy()를 추가적으로 진행합니다. 
+세션 데이터의 삭제(Destory)는 아래와 같습니다. clearAll과 동일하게 세션에 저장된 데이터를 삭제하며 session_destroy()를 수행합니다. 
 ```
 $app->get('/auth/sign/out', function($request, $response, $args) {
   \Fx\Session::destroy();
