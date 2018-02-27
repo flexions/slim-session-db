@@ -9,12 +9,19 @@ Slim Framework에서 DB기반 Session을 위한 Middleware 입니다. PHP의 Ses
 composer.json 예시는 아래와 같습니다.
 ```
 {
-"repositories": [
+  "name": "YOUR_PROJECT_NAME",
+  "description": "YOUR_PROJECT_DESCRIPTION",
+  "autoload": {
+      "psr-4": {
+          "Fx\\": "vendor/flexion/slim-session-db/Fx"
+      }
+  },
+  "repositories": [
       {
           "type" : "package",
           "package" : {
               "name" : "flexion/slim-session-db",
-              "version": "1.0",
+              "version": "1.1.0",
               "source": {
                   "url": "https://gitlab.flexion.co.kr/flexion/slim-session-db.git",
                   "type":"git",
@@ -27,7 +34,7 @@ composer.json 예시는 아래와 같습니다.
       "slim/slim": "^3.0",
       "zguillez/slim-mobile-detect": "^1.0",
       "slim/flash": "^0.2.0",
-      "flexion/slim-session-db": "1.0"
+      "flexion/slim-session-db": "1.1.0"
   }
 }
 
@@ -55,7 +62,7 @@ $app->add(new \Fx\SessionMiddleware([
   'name' => 'fxsess',
   'db' => [
     'host'   => getenv('DB_PORT_3306_TCP_ADDR'),
-    'dbname' => 'YOUR_DB_NAME'
+    'dbname' => 'YOUR_DB_NAME',
     'user'   => 'YOUR_DB_USER_NAME',
     'pass'   => getenv('DB_ENV_MYSQL_ROOT_PASSWORD'),
   ]
