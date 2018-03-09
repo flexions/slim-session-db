@@ -65,6 +65,7 @@ $app->add(new \Fx\SessionMiddleware([
     'dbname' => 'YOUR_DB_NAME',
     'user'   => 'YOUR_DB_USER_NAME',
     'pass'   => getenv('DB_ENV_MYSQL_ROOT_PASSWORD'),
+    'table'  => 'fx_slim_sessions'  
   ]
 ]));
 ```
