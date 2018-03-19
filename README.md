@@ -38,9 +38,6 @@ composer.json 예시는 아래와 같습니다.
   }
 }
 
-```
-- 주의: 본 Repository는 Private이기 때문에, composer install / composer update 시 github ID/PW 입력이 필요합니다.
-
 
 ### 2. 세션 정보를 저장할 DB 생성
 아래와 같이 사용할 DB에 세션 정보를 저장할 DB를 생성합니다.
