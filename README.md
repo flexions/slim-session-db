@@ -13,17 +13,17 @@ composer.json 예시는 아래와 같습니다.
   "description": "YOUR_PROJECT_DESCRIPTION",
   "autoload": {
       "psr-4": {
-          "Fx\\": "vendor/flexion/slim-session-db/Fx"
+          "Fx\\": "vendor/flexions/slim-session-db/Fx"
       }
   },
   "repositories": [
       {
           "type" : "package",
           "package" : {
-              "name" : "flexion/slim-session-db",
+              "name" : "flexions/slim-session-db",
               "version": "1.1.0",
               "source": {
-                  "url": "https://gitlab.flexion.co.kr/flexion/slim-session-db.git",
+                  "url": "https://github.com/flexions/slim-session-db.git",
                   "type":"git",
                   "reference":"master"
               }
@@ -34,12 +34,12 @@ composer.json 예시는 아래와 같습니다.
       "slim/slim": "^3.0",
       "zguillez/slim-mobile-detect": "^1.0",
       "slim/flash": "^0.2.0",
-      "flexion/slim-session-db": "1.1.0"
+      "flexions/slim-session-db": "1.1.0"
   }
 }
 
 ```
-- 주의: 본 Repository는 Private이기 때문에, composer install / composer update 시 gitlab.flexion.co.kr에 등록된 ID/PW 입력이 필요합니다.
+- 주의: 본 Repository는 Private이기 때문에, composer install / composer update 시 github ID/PW 입력이 필요합니다.
 
 
 ### 2. 세션 정보를 저장할 DB 생성
