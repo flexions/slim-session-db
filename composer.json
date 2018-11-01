@@ -1,4 +1,22 @@
 {
   "name": "flexions/slim-session-db",
-  "description": "PHP Database Session Middleware for Slim Framework"
+  "type": "library",
+  "description": "PHP Database Session Middleware for Slim Framework",
+  "keywords": ["slim", "session"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "inlee",
+      "email": "jamesinlee@gmail.com"
+    } 
+  ],
+  "minimum-stability": "stable",
+  "require": {
+
+  },
+  "autoload": {
+    "psr-4" : {
+        "flexion\\slim-session-db\\" : "src"
+     }
+  }
 }
