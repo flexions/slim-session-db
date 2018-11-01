@@ -2,7 +2,7 @@
   "name": "flexions/slim-session-db",
   "type": "library",
   "description": "PHP Database Session Middleware for Slim Framework",
-  "keywords": ["slim", "session"],
+  "keywords": ["slim", "session", "middleware"],
   "license": "MIT",
   "authors": [
     {
