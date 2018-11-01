@@ -8,7 +8,11 @@
     {
       "name": "inlee",
       "email": "jamesinlee@gmail.com"
-    } 
+    },
+    {
+      "name": "cbpark",
+      "email": "cbpark@flexion.co.kr"
+    }
   ],
   "minimum-stability": "stable",
   "require": {
