@@ -14,7 +14,7 @@
  * @see http://blog.naver.com/PostView.nhn?blogId=archlord8674&logNo=110096701625
  * @see http://php.net/manual/kr/function.session-set-save-handler.php
  */
-namespace Fx;
+namespace Flexion;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;

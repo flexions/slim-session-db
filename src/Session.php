@@ -1,5 +1,5 @@
 <?php 
-namespace Fx;
+namespace Flexion;
 
 final class Session {
   
