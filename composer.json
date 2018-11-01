@@ -1,0 +1,4 @@
+{
+  "name": "flexions/slim-session-db",
+  "description": "PHP Database Session Middleware for Slim Framework"
+}
