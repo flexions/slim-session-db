@@ -31,7 +31,7 @@ final class SessionUtil {
    * @return [string]           Value for key or default param if not key exists
    */
   public function get($key, $default = null) {
-    if(array_key_exists($key, $_SESSION)) {
+    if(is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
       return $_SESSION[$key];
     }
     return $default;
@@ -53,7 +53,7 @@ final class SessionUtil {
    * @param [string] $key   A key for session key 
    */
   public function delete($key) {
-    if(array_key_exists($key, $_SESSION)) {
+    if(is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
       unset($_SESSION[$key]);
       $_SESSION[$key] = null;
     }
