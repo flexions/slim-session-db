@@ -53,7 +53,7 @@ final class SessionUtil {
    */
   public function get($key, $default = null) {
     if(is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
-      return $_SESSION[$key];
+      return $_SESSION[$this->_sessionName][$key];
     }
     return $default;
   }
@@ -65,7 +65,7 @@ final class SessionUtil {
    * @param string $value   A value for a key
    */
   public function set($key, $value) {
-    $_SESSION[$key] = $value;
+    $_SESSION[$this->_sessionName][$key] = $value;
   }
 
   /**
@@ -75,8 +75,8 @@ final class SessionUtil {
    */
   public function delete($key) {
     if(is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
-      unset($_SESSION[$key]);
-      $_SESSION[$key] = null;
+      unset($_SESSION[$this->_sessionName][$key]);
+      $_SESSION[$this->_sessionName][$key] = null;
     }
   }
 
@@ -84,7 +84,7 @@ final class SessionUtil {
    * Clear All Session Value not destroy session
    */
   public function clearAll() {
-    $_SESSION = [];
+    $_SESSION[$this->_sessionName] = [];
   }
 }
 
