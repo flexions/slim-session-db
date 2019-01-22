@@ -14,147 +14,101 @@
  */
 namespace Flexion;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use \PDO;
-
 /**
  * DB Session Middleware for Slim Framework
+ * 
+ * @author inlee <inlee@flexion.co.kr>
  */
-final class SessionMiddleware {
+final class SessionMiddleware implements \SessionHandlerInterface {
 
   /**
-   * Session Options
-   */
-  protected $_options = [
-    'name'          => '__fxsess',  // Session name
-    'lifetime'      => 180,         // Session life time for minutes
-    'cache_limiter' => 'private',   // cache limiter
-    'path' => null,
-    'domain' => null,
-    'secure' => false,
-    'httponly' => true,
-    // database
-    'db' => [
-      'host'   => null,   // host
-      'user'   => null,   // user
-      'pass'   => null,   // password
-      'dbname' => null,   // dbname
-      'table'  => 'fx_slim_sessions' // default table name
-    ]
-  ];
-
-  /**
-   * PDO Object
-   */
-  private $_pdo;
-
-  /**
-   * constructor
+   * PDO object
    *
-   * @param array $options    session option
+   * @var \PDO
    */
-  public function __construct($options = []) {
-    $this->_options = $this->_deepExtend($this->_options, $options);
+  private $_pdo = null;
+
+  /**
+   * Session data store table name
+   *
+   * @var string
+   */
+  private $_tableName = null;
+
+  /**
+   * Session Name
+   *
+   * @var string
+   */
+  private $_sessionName = null;
+
+  /**
+   * Constructor
+   *
+   * @param string $host          Database host
+   * @param string $dbname        Database name
+   * @param string $user          Database user
+   * @param string $pass          Database password
+   * @param string $tableName     Session data table name
+   * @param string $sessionName   Session Name
+   */
+  public function __construct($host,
+                              $dbname,
+                              $user,
+                              $pass,
+                              $tableName,
+                              $sessionName) {
+    $this->_tableName = $tableName;
+    $this->_sessionName = $sessionName;
+
+    $this->_pdo = new \PDO("mysql:host={$host};dbname={$dbname};charset=utf8",
+                           $user, $pass);
   }
 
   /**
-   * destructor
-   */
-  public function __destruct() {
-    @session_write_close();
-  }
-
-
-  /**
-   * Invoke middleware
+   * middleware invokable class
    *
-   * @param  RequestInterface  $request  PSR7 request object
-   * @param  ResponseInterface $response PSR7 response object
-   * @param  callable          $next     Next middleware callable
-   *
-   * @return ResponseInterface PSR7 response object
-   * 
-   * @see https://www.slimframework.com/docs/concepts/middleware.html
+   * @param  \Psr\Http\Message\ServerRequestInterface $request  PSR7 request
+   * @param  \Psr\Http\Message\ResponseInterface      $response PSR7 response
+   * @param  callable                                 $next     Next middleware
+   * @return \Psr\Http\Message\ResponseInterface                PSR7 response
    */
-  public function __invoke(RequestInterface $request, 
-                           ResponseInterface $response, 
-                           callable $next) {
-    $this->_start();
+  public function __invoke($request, $response, $next) {
+    session_set_save_handler($this, true);
+    session_name($this->_sessionName);
+    session_start();
+
     return $next($request, $response);
   }
 
   /**
-   * Start a session
+   * Re-initialize existing session, or creates a new one. 
+   * Called when a session starts or when session_start() is invoked.
+   *
+   * @param string $save_path     The path where to store/retrieve the session.
+   * @param string $session_name  The session name.
+   * @return bool                 true: success, false: fail
    */
-  private function _start() {
-    // 1. Create database connection
-    $host   = $this->_options['db']['host'];
-    $user   = $this->_options['db']['user'];
-    $pass   = $this->_options['db']['pass'];
-    $dbname = $this->_options['db']['dbname'];
-   
-    $this->_pdo = new \PDO("mysql:host={$host};dbname={$dbname};charset=utf8",
-                           $user, $pass);
-
-    // 2. Configure Session
-    // - Set session expire time
-    session_cache_expire($this->_options['lifetime']);
-    // - Set cache limter
-    session_cache_limiter($this->_options['cache_limiter']);
-
-    // - Set handler to overide SESSION
-    session_set_save_handler(
-      array($this, "_open"),
-      array($this, "_close"),
-      array($this, "_read"),
-      array($this, "_write"),
-      array($this, "_destroy"),
-      array($this, "_gc")
-    );
-    
-    // - Set session name
-    if(!is_null($this->_options['name'])) {
-      session_name($this->_options['name']);
-    }
-    
-    // - Start the session
-    @session_start();
-  }
-
-  /**
-   * Session open
-  *
-   * @return bool   true: success of session Open / false: otherwise
-   */
-  public function _open() {   
+  public function open($save_path, $session_name) {
     return $this->_pdo ? true : false;
   }
 
   /**
-   * Session close
-   * 
-   * @return bool   true: success of session close / false: otherwise
-   */
-  public function _close() {
-    $this->_pdo = null;
-    return true;
-  }
-
-  /**
-   * Session read 
+   * Reads the session data from the session storage, and returns the results. 
+   * Called right after the session starts or when session_start() is called. 
    *
-   * @param  [string] $id   session ID
-   * @return [string]       Session data information. 
-   *                        - If empty, return empty string
+   * @param string $session_id    The session id.
+   * @return string               An encoded string of the read data.
+   *                              If nothing was read, it must return an
+   *                              empty string. 
    */
-  public function _read($id) {
+  public function read($session_id) {
     try {
-      $table = $this->_options['db']['table'];
+      $table = $this->_tableName;
       
       $sql = "SELECT `data` FROM {$table} WHERE id = :id";
       $stmt = $this->_pdo->prepare($sql);
-      $stmt->bindValue(':id', $id);
+      $stmt->bindValue(':id', $session_id);
       $stmt->execute();
   
       $row = $stmt->fetch();
@@ -163,7 +117,6 @@ final class SessionMiddleware {
       if($row) {
         $ret = $row['data'];
       }
-      
       return $ret;
     }
     catch(Exception $e) {
@@ -172,31 +125,40 @@ final class SessionMiddleware {
   }
 
   /**
-   * Session write
-   * 
-   * @param  [string] $id    Session ID
-   * @param  [object] $data  Session Data
-   * @return [bool]          true: Success of Session Write / false: otherwise
+   * Writes the session data to the session storage. 
+   * Called by session_write_close(), when session_register_shutdown() fails, 
+   * or during a normal shutdown. 
+   *
+   * @param string $session_id    The session id.
+   * @param string $session_data  The encoded session data. 
+   *                              This data is the result of the PHP internally 
+   *                              encoding the $_SESSION superglobal 
+   *                              to a serialized string and passing it as this parameter. 
+   * @return void
    */
-  public function _write($id, $data) {
+  public function write($session_id, $session_data) {
     try {
-      $access = time(); // Create time stamp
-      $table = $this->_options['db']['table'];
+      $access = time();
+      $table = $this->_tableName;
       
       $sql = "REPLACE INTO {$table} VALUES (:id, :access, :data)";
       $stmt = $this->_pdo->prepare($sql);
-      $stmt->bindValue(':id',     $id);
+      $stmt->bindValue(':id',     $session_id);
       $stmt->bindValue(':access', $access);
-      $stmt->bindValue(':data',   $data);
+      $stmt->bindValue(':data',   $session_data);
       $stmt->execute();
 
-      $lastInsertId = $this->_pdo->lastInsertId();
+      // Prevent session_write_close() warning
+      return true;
 
-      $ret = false;
-      if($lastInsertId)
-        $ret = true;
+      // $lastInsertId = $this->_pdo->lastInsertId();
+      
+      // $ret = false;
+      // if($lastInsertId) {
+      //   $ret = true;
+      // }
 
-      return $ret;
+      // return $ret;
     }
     catch(Exception $e) {
       echo $e->getMessage();
@@ -204,17 +166,31 @@ final class SessionMiddleware {
   }
 
   /**
-   * Session destroy 
-   * 
-   * @param  [string] $id  Session ID
-   * @return [bool]        true: Success of session destory / false: otherwise
+   * Closes the current session. 
+   * This function is automatically executed when closing the session, 
+   * or explicitly via session_write_close().
+   *
+   * @return bool   true: success, false: fail.
    */
-  public function _destroy($id) {
+  public function close() {
+    $this->_pdo = null;
+    return true;
+  }
+
+  /**
+   * Destroys a session. 
+   * Called by session_regenerate_id() (with $destroy = TRUE), 
+   * session_destroy() and when session_decode() fails.
+   *
+   * @param string $session_id  The session ID being destroyed.
+   * @return bool               true: success, false: fail.
+   */
+  public function destroy($session_id) {
     try {
-      $table = $this->_options['db']['table'];
+      $table = $this->_tableName;
       $sql = "DELETE FROM {$table} WHERE id = :id";
       $stmt = $this->_pdo->prepare($sql);
-      $stmt->bindValue(':id', $id);
+      $stmt->bindValue(':id', $session_id);
       $stmt->execute();
 
       $ret = false;
@@ -230,16 +206,19 @@ final class SessionMiddleware {
   }
 
   /**
-   * Garbage Collection
-   * 
-   * @param  [string] $max  maximum session lifetime
-   * @return [bool]         true: Success of gc / false: otherwise
+   * Cleans up expired sessions. 
+   * Called by session_start(), based on session.gc_divisor, 
+   * session.gc_probability and session.gc_maxlifetime settings.
+   *
+   * @param int $maxlifetime    Sessions that have not updated for the last 
+   *                            maxlifetime seconds will be removed.
+   * @return int                true: success, false: fail.
    */
-  public function _gc($max) {
+  public function gc($maxlifetime) {
     try {
       // Calculate what is to be deemed old
-      $old = time() - $max;
-      $table = $this->_options['db']['table'];
+      $old = time() - $maxlifetime;
+      $table = $this->_tableName;
       
       $sql = "DELETE FROM {$table} WHERE access < :old";
       $stmt = $this->_pdo->prepare($sql);
@@ -255,31 +234,6 @@ final class SessionMiddleware {
     catch(Exception $e) {
       echo $e->getMessage();
     }
-  }
-
-
-  /**
-   * Deep copy from b array to a array
-   *
-   * @param  [Array]  $a  Copy target array
-   * @param  [Array]  $b  Copy source array
-   * @return [Array]  Array of combined a with b
-   */
-  private function _deepExtend($a, $b) {
-    foreach($b as $k=>$v) {
-      if(is_array($v)) {
-        if(!isset($a[$k])) { 
-          $a[$k] = $v;
-        }
-        else { 
-          $a[$k] = $this->_deepExtend($a[$k], $v);
-        }
-      } 
-      else {
-        $a[$k] = $v;
-      }
-    }
-    return $a;
   }
 }
 

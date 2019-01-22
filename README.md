@@ -34,20 +34,29 @@ require 'vendor/autoload.php';
 $app = new Slim\App();
 $container = $app->getContainer();
 
-$app->add(new \Flexion\SessionMiddleware([
-  'name' => ${YOUR_SESSION_NAME},                 // default: __fxsess
-  'db' => [                                       
-    'host'   => ${YOUR_DATABASE_HOST},            
-    'user'   => ${YOUR_DATABASE_ID},              
-    'pass'   => ${YOUR_DATABASE_PASSWORD},        
-    'dbname' => ${YOUR_DATABASE_DB_NAME},         
-    'table'  => ${YOUR_SESSION_STORE_TABLE_NAME}  // default: fx_slim_sessions
+$params = [
+  'name' => ${YOUR_SESSION_NAME},
+  'db' => [
+    'host'   => ${YOUR_DATABASE_HOST},
+    'user'   => ${YOUR_DATABASE_ID},
+    'pass'   => ${YOUR_DATABASE_PASSWORD},
+    'dbname' => ${YOUR_DATABASE_DB_NAME},
+    'table'  => ${YOUR_SESSION_STORE_TABLE_NAME}
   ]
+];
+
+$app->add(new \Flexion\SessionMiddleware(
+  $params['db']['host'],
+  $params['db']['dbname'],
+  $params['db']['user'],
+  $params['db']['pass'],
+  $params['db']['table'],
+  $params['name']
 ]));
 
 // dependency injection of session module
 $container['session'] = function($c) {
-  return new \Flexion\SessionUtil();
+  return new \Flexion\SessionUtil($params['name']);
 };
 
 ```

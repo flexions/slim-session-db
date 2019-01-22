@@ -3,9 +3,30 @@ namespace Flexion;
 
 /**
  * Session Utility
+ * 
+ * @author inlee <inlee@flexion.co.kr>
  */
 final class SessionUtil {
-  
+
+  /**
+   * Session Name. Use for array key.
+   *
+   * @var string
+   */
+  private $_sessionName = null;
+
+  /**
+   * Constructor
+   *
+   * @param string $sessionName   Session name that will use for array key.
+   *                              Default is 
+   */
+  public function __construct($sessionName = '__fxsess__') {
+    if($sessionName) {
+      $this->_sessionName = $sessionName;
+    }
+  } 
+
   /**
    * Regenerate session
    */
@@ -26,9 +47,9 @@ final class SessionUtil {
   /**
    * Get the session value
    *
-   * @param  [string] $key      A key for session array
-   * @param  [string] $default  Default value if key not exists
-   * @return [string]           Value for key or default param if not key exists
+   * @param  string $key      A key for session array
+   * @param  string $default  Default value if key not exists
+   * @return string           Value for key or default param if not key exists
    */
   public function get($key, $default = null) {
     if(is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
@@ -40,8 +61,8 @@ final class SessionUtil {
   /**
    * Set the session value
    *
-   * @param [string] $key     A key for session array
-   * @param [string] $value   A value for a key
+   * @param string $key     A key for session array
+   * @param string $value   A value for a key
    */
   public function set($key, $value) {
     $_SESSION[$key] = $value;
@@ -50,7 +71,7 @@ final class SessionUtil {
   /**
    * Delete session key & value
    *
-   * @param [string] $key   A key for session key 
+   * @param string $key   A key for session key 
    */
   public function delete($key) {
     if(is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
