@@ -52,10 +52,16 @@ final class SessionUtil {
    * @return string           Value for key or default param if not key exists
    */
   public function get($key, $default = null) {
-    if(is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
-      return $_SESSION[$this->_sessionName][$key];
+    $sessionName = $this->_sessionName;
+    $ret = $default;
+
+    if(is_array($_SESSION) && array_key_exists($sessionName, $_SESSION)) {
+      if(array_key_exists($key, $_SESSION[$sessionName])) {
+        $ret = $_SESSION[$this->_sessionName][$key];
+      }
     }
-    return $default;
+
+    return $ret;
   }
 
   /**
@@ -74,9 +80,13 @@ final class SessionUtil {
    * @param string $key   A key for session key 
    */
   public function delete($key) {
-    if(is_array($_SESSION) && array_key_exists($key, $_SESSION)) {
-      unset($_SESSION[$this->_sessionName][$key]);
-      $_SESSION[$this->_sessionName][$key] = null;
+    $sessionName = $this->_sessionName;
+    
+    if(is_array($_SESSION) && array_key_exists($sessionName, $_SESSION)) {
+      if(array_key_exists($key, $_SESSION[$sessionName])) {
+        unset($_SESSION[$this->_sessionName][$key]);
+        $_SESSION[$this->_sessionName][$key] = null;
+      }
     }
   }
 
