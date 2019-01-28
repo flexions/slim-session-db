@@ -43,6 +43,24 @@ final class SessionUtil {
     $_SESSION = [];
     session_destroy();
   }
+  
+  /**
+   * Get All Session Values
+   *
+   * @return arary  User Input Session Values
+   */
+  public function getAll() {
+    $sessionName = $this->_sessionName;
+    $ret = null;
+
+    if(is_array($_SESSION)) {
+      if(array_key_exists($key, $_SESSION[$sessionName])) {
+        $ret = $_SESSION[$this->_sessionName];
+      }
+    }
+
+    return $ret;
+  }
 
   /**
    * Get the session value
