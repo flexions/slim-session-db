@@ -54,9 +54,7 @@ final class SessionUtil {
     $ret = null;
 
     if(is_array($_SESSION)) {
-      if(array_key_exists($key, $_SESSION[$sessionName])) {
-        $ret = $_SESSION[$this->_sessionName];
-      }
+      $ret = $_SESSION[$this->_sessionName];
     }
 
     return $ret;
