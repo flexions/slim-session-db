@@ -73,7 +73,8 @@ $app->post('/login', function($request, $response, $args) {
   $this->session->set('signed', true);
   $this->session->set('nickname', 'JohnDoe');
 
-  // Set session values
+  // Get session values
+  $sessionId = $this->session->getSessionId();
   $signed = $this->session->get('signed');
   $nickname = $this->session->get('nickname');
 
