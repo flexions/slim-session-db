@@ -63,6 +63,15 @@ final class SessionUtil {
   }
 
   /**
+   * Get the session ID
+   *
+   * @return string   Session ID
+   */
+  public function getSessionId() {
+    return session_id();
+  }
+
+  /**
    * Get the session value
    *
    * @param  string $key      A key for session array
