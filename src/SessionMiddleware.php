@@ -74,9 +74,6 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    * @return \Psr\Http\Message\ResponseInterface                PSR7 response
    */
   public function __invoke($request, $response, $next) {
-    // create session table if not exists
-    $this->createTable();
-
     session_set_save_handler($this, true);
     session_name($this->_sessionName);
     session_start();
@@ -230,34 +227,5 @@ final class SessionMiddleware implements \SessionHandlerInterface {
     catch(\Exception $e) {
       throw $e;
     }
-  }
-
-  /**
-   * Create table for session data if not exists.
-   *
-   * @return void
-   */
-  private function createTable() {
-    static $sessionTableCreated = false;
-
-    try {
-      if (!$sessionTableCreated) {
-        $table = $this->_tableName;
-        $sql = "CREATE TABLE IF NOT EXISTS {$table} (
-          `id` varchar(32) NOT NULL,
-          `access` int(10) unsigned DEFAULT NULL,
-          `data` text,
-          PRIMARY KEY(`id`)
-        );";
-
-        $this->_pdo->exec($sql);
-
-        $sessionTableCreated = true;
-      }
-    }
-    catch (\Exception $e) {
-      throw $e;
-    }
-
   }
 }
