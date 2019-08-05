@@ -124,5 +124,3 @@ final class SessionUtil {
     $_SESSION[$this->_sessionName] = [];
   }
 }
-
-?>
