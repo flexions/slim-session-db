@@ -105,7 +105,7 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    *                              If nothing was read, it must return an
    *                              empty string. 
    */
-  public function read(string $session_id): string {
+  public function read($session_id): string {
     try {
       $table = $this->_tableName;
       
@@ -140,7 +140,7 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    *                              to a serialized string and passing it as this parameter. 
    * @return bool                 true: success, false: fail
    */
-  public function write(string $session_id, string $session_data): bool {
+  public function write($session_id, $session_data): bool {
     try {
       $access = time();
       $table = $this->_tableName;
