@@ -243,7 +243,7 @@ final class SessionMiddleware implements \SessionHandlerInterface {
     try {
       if (!$sessionTableCreated) {
         $table = $this->_tableName;
-        $sql = "CREATE TABLE IF NOT EXISTS ${$table} (
+        $sql = "CREATE TABLE IF NOT EXISTS {$table} (
           `id` varchar(32) NOT NULL,
           `access` int(10) unsigned DEFAULT NULL,
           `data` text,
@@ -251,11 +251,9 @@ final class SessionMiddleware implements \SessionHandlerInterface {
         );";
 
         $this->_pdo->exec($sql);
-      }
 
-      session_set_save_handler($this, true);
-      session_name($this->_sessionName);
-      session_start();
+        $sessionTableCreated = true;
+      }
     }
     catch (\Exception $e) {
       throw $e;
