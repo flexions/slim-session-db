@@ -61,12 +61,12 @@ final class SessionMiddleware implements \SessionHandlerInterface {
     $this->_tableName = $tableName;
     $this->_sessionName = $sessionName;
 
-    $this->_pdo = new \PDO("mysql:host={$host};dbname={$dbname};charset=utf8",
-                           $user, $pass);
+    $dsn = "mysql:host={$host};dbname={$dbname};charset=utf8";
+    $this->_pdo = new \PDO($dsn, $user, $pass);
   }
 
   /**
-   * middleware invokable class
+   * Middleware invokable class
    *
    * @param  \Psr\Http\Message\ServerRequestInterface $request  PSR7 request
    * @param  \Psr\Http\Message\ResponseInterface      $response PSR7 response
@@ -74,6 +74,9 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    * @return \Psr\Http\Message\ResponseInterface                PSR7 response
    */
   public function __invoke($request, $response, $next) {
+    // create session table if not exists
+    $this->createTable();
+
     session_set_save_handler($this, true);
     session_name($this->_sessionName);
     session_start();
@@ -89,7 +92,7 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    * @param string $session_name  The session name.
    * @return bool                 true: success, false: fail
    */
-  public function open($save_path, $session_name) {
+  public function open($save_path, $session_name): bool {
     return $this->_pdo ? true : false;
   }
 
@@ -102,7 +105,7 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    *                              If nothing was read, it must return an
    *                              empty string. 
    */
-  public function read($session_id) {
+  public function read(string $session_id): string {
     try {
       $table = $this->_tableName;
       
@@ -117,10 +120,11 @@ final class SessionMiddleware implements \SessionHandlerInterface {
       if($row) {
         $ret = $row['data'];
       }
+
       return $ret;
     }
-    catch(Exception $e) {
-      echo $e->getMessage();
+    catch(\Exception $e) {
+      throw $e;
     }
   }
 
@@ -134,34 +138,26 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    *                              This data is the result of the PHP internally 
    *                              encoding the $_SESSION superglobal 
    *                              to a serialized string and passing it as this parameter. 
-   * @return void
+   * @return bool                 true: success, false: fail
    */
-  public function write($session_id, $session_data) {
+  public function write(string $session_id, string $session_data): bool {
     try {
       $access = time();
       $table = $this->_tableName;
       
       $sql = "REPLACE INTO {$table} VALUES (:id, :access, :data)";
       $stmt = $this->_pdo->prepare($sql);
-      $stmt->bindValue(':id',     $session_id);
-      $stmt->bindValue(':access', $access);
-      $stmt->bindValue(':data',   $session_data);
-      $stmt->execute();
-
-      // Prevent session_write_close() warning
-      return true;
-
-      // $lastInsertId = $this->_pdo->lastInsertId();
       
-      // $ret = false;
-      // if($lastInsertId) {
-      //   $ret = true;
-      // }
+      $stmt->bindValue(':id', $session_id);
+      $stmt->bindValue(':access', $access);
+      $stmt->bindValue(':data', $session_data);
+      
+      $ret = $stmt->execute();
 
-      // return $ret;
+      return $ret;
     }
-    catch(Exception $e) {
-      echo $e->getMessage();
+    catch(\Exception $e) {
+      throw $e;
     }
   }
 
@@ -172,7 +168,7 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    *
    * @return bool   true: success, false: fail.
    */
-  public function close() {
+  public function close(): bool {
     $this->_pdo = null;
     return true;
   }
@@ -185,7 +181,7 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    * @param string $session_id  The session ID being destroyed.
    * @return bool               true: success, false: fail.
    */
-  public function destroy($session_id) {
+  public function destroy($session_id): bool {
     try {
       $table = $this->_tableName;
       $sql = "DELETE FROM {$table} WHERE id = :id";
@@ -194,14 +190,14 @@ final class SessionMiddleware implements \SessionHandlerInterface {
       $stmt->execute();
 
       $ret = false;
-      if($stmt->rowCount())
+      if($stmt->rowCount()) {
         $ret = true;
+      }
 
       return $ret;
     }
-    catch(Exception $e) {
-      echo $e->getMessage();
-      exit;
+    catch(\Exception $e) {
+      throw $e;
     }
   }
 
@@ -212,9 +208,12 @@ final class SessionMiddleware implements \SessionHandlerInterface {
    *
    * @param int $maxlifetime    Sessions that have not updated for the last 
    *                            maxlifetime seconds will be removed.
-   * @return int                true: success, false: fail.
+   * @return int                The return value
+   *                            (usually TRUE on success, FALSE on failure).
+   *                            Note this value is returned internally
+   *                            to PHP for processing.
    */
-  public function gc($maxlifetime) {
+  public function gc($maxlifetime): int {
     try {
       // Calculate what is to be deemed old
       $old = time() - $maxlifetime;
@@ -225,16 +224,42 @@ final class SessionMiddleware implements \SessionHandlerInterface {
       $stmt->bindValue(':old', $old);
       $stmt->execute();
       
-      $ret = false;
-      if($stmt->rowCount())
-        $ret = true;
-
+      $ret = $stmt->rowCount();
       return $ret;
     }
-    catch(Exception $e) {
-      echo $e->getMessage();
+    catch(\Exception $e) {
+      throw $e;
     }
   }
-}
 
-?>
+  /**
+   * Create table for session data if not exists.
+   *
+   * @return void
+   */
+  private function createTable(): void {
+    static $sessionTableCreated = false;
+
+    try {
+      if (!$sessionTableCreated) {
+        $table = $this->_tableName;
+        $sql = "CREATE TABLE IF NOT EXISTS ${$table} (
+          `id` varchar(32) NOT NULL,
+          `access` int(10) unsigned DEFAULT NULL,
+          `data` text,
+          PRIMARY KEY(`id`)
+        );";
+
+        $this->_pdo->exec($sql);
+      }
+
+      session_set_save_handler($this, true);
+      session_name($this->_sessionName);
+      session_start();
+    }
+    catch (\Exception $e) {
+      throw $e;
+    }
+
+  }
+}
